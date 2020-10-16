@@ -1,0 +1,3 @@
+This repository contains the files required for the completion of the Lab Assignment for ECEN 5033 : Concurrent Programming. The details are as below:
+
+The code is organized based on their common functionality and their usage. There are 4 different c++ files in the project: main.cpp, util.cpp, mergesort.cpp and quicksort.cpp. As the name suggests, util file contains all the miscellaneous functions used in the utility of the main function. Similarly, mergesort and quicksort contains the functions used for the sorting algorithm. And the main file contains the main function. The header files for each file contains the function declarations of the functions used in C++ file. In the next topic, the functionality of each function is given in detail.
