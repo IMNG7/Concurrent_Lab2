@@ -22,8 +22,13 @@ mutex mtx;
 map<int,int> bucket;
 extern struct timespec start, end_time;
 MCS_Lock Lock_MCS;
-pthread_barrier_t bar3;
-barrier_sense bar;
+pthread_barrier_t bar;
+barrier_sense bar_sen;
+extern lock_type lock_name;
+extern string bar_name;
+static void (*lock_array[])() = {tas_lock,ttas_lock,ticket_lock,pthread_lock};
+static void (*unlock_array[])() = {tas_unlock,ttas_unlock,ticket_unlock,pthread_unlock};
+
 /*
 	Function Name: bucketsort_thread
 	Description: Initial recursive function to split the vector for sorting for single thread
@@ -49,29 +54,38 @@ void* bucketsort_thread(void* args)
         right += offset;
     }
     // cout<<"wait1";
-    bar.wait();
+    if(bar_name == "sense")
+		bar_sen.wait();
+	else if(bar_name == "pthread")
+		pthread_barrier_wait(&bar);
 	if(thread_part==0)
 	{
 		clock_gettime(CLOCK_MONOTONIC,&start);
 	}
 	// cout<<"wait2";
-	bar.wait();
+	if(bar_name == "sense")
+		bar_sen.wait();
+	else if(bar_name == "pthread")
+		pthread_barrier_wait(&bar);
     // Inserting the value in individual bucket maps
 	for(int i=left;i<=right;i++)
-	{	//mtx.lock();
-		//tas_lock();
-		//ttas_lock();
-		//ticket_lock();
-		Lock_MCS.lock(&New_node);
+	{	
+		if(lock_name < mcs)
+			(*lock_array[lock_name])();
+		else if(lock_name == mcs)
+			Lock_MCS.lock(&New_node);
 		bucket.insert(pair<int,int>(UnsortedArray[i],i));
-		Lock_MCS.unlock(&New_node);
-		//ticket_unlock();
-		//ttas_unlock();
-		//tas_unlock();
-		//mtx.unlock();
+		if(lock_name < mcs)
+			(*unlock_array[lock_name])();
+		else if(lock_name == mcs)
+			Lock_MCS.unlock(&New_node);
+		
 	}
 	// cout<<"wait3";
-	bar.wait();
+	if(bar_name == "sense")
+		bar_sen.wait();
+	else if(bar_name == "pthread")
+		pthread_barrier_wait(&bar);
 	if(thread_part==0)
 	{
 		clock_gettime(CLOCK_MONOTONIC,&end_time);
@@ -88,7 +102,10 @@ void bucketsort(pthread_t *threads)
 	ssize_t* argt = new ssize_t[thread_num+1];
 	int ret;
 	int size = UnsortedArray.size();
-	bar.initialize_bar_values(thread_num);
+	if(bar_name == "sense")
+		bar_sen.initialize_bar_values(thread_num);
+	else if(bar_name == "pthread")
+		pthread_barrier_init(&bar, NULL, thread_num);
 	for(int i=0;i<thread_num;i++)
 	{	
 		argt[i]=i;
@@ -121,5 +138,13 @@ void bucketsort(pthread_t *threads)
 
 void BAR3_init()
 {
-	pthread_barrier_init(&bar3, NULL, thread_num);
+	pthread_barrier_init(&bar, NULL, thread_num);
+}
+void pthread_lock()
+{
+	mtx.lock();
+}
+void pthread_unlock()
+{
+	mtx.unlock();
 }

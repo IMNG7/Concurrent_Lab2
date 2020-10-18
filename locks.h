@@ -7,14 +7,16 @@ using namespace std;
 #include <iostream>
 
 
-void tas_lock();
-void tas_unlock();
-
 class Node
 {
 public:
 	atomic<Node*> next;
 	atomic<bool> wait;
+	Node()
+	{
+		next = NULL;
+		wait = false;
+	}
 };
 class MCS_Lock
 {
@@ -22,31 +24,29 @@ class MCS_Lock
 public:
 	void lock(Node* myNode)
 	{
-		Node* Null_ptr = NULL;
-		myNode->next.store(Null_ptr);
+		myNode->next.store(nullptr);
 		myNode->wait.store(true);
-		Node* oldTail = tail.exchange(myNode);
+		Node* oldTail = tail.exchange(myNode,memory_order_acq_rel);
 		if(oldTail)
-		{
-			oldTail->next.store(myNode);
-			while(myNode->wait.load());
+		{	//myNode->wait.store(true,memory_order_relaxed);
+			oldTail->next.store(myNode,memory_order_release);
+			while(myNode->wait.load(memory_order_acquire));
 		}
 	}
 	void unlock(Node* myNode)
 	{
-		Node* succ = myNode->next.load();
+		Node* succ = myNode->next.load(memory_order_acquire);
 		if(!succ)
 		{
 			auto expected = myNode;
-			Node* Null_ptr = NULL;
-			if(atomic_compare_exchange_strong(&tail,&expected,Null_ptr))
+			if(tail.compare_exchange_strong(expected,nullptr,memory_order_acq_rel))
 				return;
 			do
 			{
-				succ = myNode->next.load();
+				succ = myNode->next.load(memory_order_acquire);
 			}while(succ=nullptr);
 		}
-		succ->wait.store(false);
+		succ->wait.store(false,memory_order_release);
 	}
 };
 class barrier_sense
@@ -79,10 +79,23 @@ public:
 	}
 };
 
+enum lock_type
+{
+	tas,
+	ttas,
+	ticket,
+	pthread,
+	mcs
+};
+
 void tas_lock();
 void tas_unlock();
 void ttas_lock();
 void ttas_unlock();
 void ticket_lock();
 void ticket_unlock();
+void pthread_lock();
+void pthread_unlock();
+
+
 #endif

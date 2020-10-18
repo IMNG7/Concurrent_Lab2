@@ -22,6 +22,7 @@
 #include "mergesort.h"
 #include "quicksort.h"
 #include "bucketsort.h"
+#include "locks.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -30,9 +31,13 @@ vector<int> UnsortedArray = {0};
 int thread_num=5;
 int offset=0;
 struct timespec start= (struct timespec){0}, end_time= (struct timespec){0};
+lock_type lock_name;
+string bar_name;
+
+
 int main(int argc, char *args[])									 
 {	int c;
-	string input_file,output_file,algorithm;
+	string input_file,output_file,algorithm,lock;
 	while(1)
 	{
 		int count = 0;
@@ -42,10 +47,12 @@ int main(int argc, char *args[])
 			{"output",	required_argument,	0,	'o'},
 			{"alg", 	required_argument,	0,	'a'},
 			{"threads", required_argument,	0,	't'},
+			{"lock", required_argument,	0,	'l'},
+			{"bar", required_argument,	0,	'b'},
 			{0,			0,					0,	0}
 		};
 		// Used to capture the command line arguments
-		c= getopt_long(argc,args,"no:t:a:",long_options,&count);		
+		c= getopt_long(argc,args,"no:t:a:i:",long_options,&count);		
 		if(c==-1)	break;
 		switch(c)
 		{
@@ -64,6 +71,24 @@ int main(int argc, char *args[])
 						break;
 			case 't' :	// Saves number of threads to be used
 						thread_num = atoi(optarg);
+						break;
+			case 'l' :	
+						// Saves the algorithm name in the variable
+						lock = optarg;
+						if(lock == "tas")
+						lock_name = tas;
+						else if(lock == "ttas")
+						lock_name = ttas;
+						else if(lock == "ticket")
+						lock_name = ticket;
+						else if(lock == "pthread")
+						lock_name = pthread;
+						else if(lock == "mcs")
+						lock_name = mcs;							
+						break;
+			case 'b' :	
+						// Saves the algorithm name in the variable
+						bar_name = optarg;							
 						break;
 			default	:	
 						break;
