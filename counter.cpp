@@ -11,7 +11,7 @@ int num_iterations=20;
 int thread_num=4;
 mutex mtx;
 pthread_barrier_t bar;
-
+MCS_Lock Lock_MCS;
 barrier_sense bar_sen;
 lock_type lock_name;
 string bar_name;
@@ -33,7 +33,7 @@ void* thread_main(void* args)
 		bar_sen.wait();
 	else if(bar_name == "pthread")
 		pthread_barrier_wait(&bar);
-	MCS_Lock Lock_MCS;
+	
 	Node New_node;
 	// New_node.next = NULL;
 	// New_node.wait = false;
