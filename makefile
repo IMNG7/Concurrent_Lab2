@@ -21,4 +21,4 @@ counter: ${DEPS2}
 	${CC} -c *.cpp
 
 clean :
-	rm mysort *.o
+	rm mysort counter *.o
