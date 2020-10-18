@@ -20,8 +20,9 @@ extern int thread_num;
 extern int offset;
 mutex mtx;
 map<int,int> bucket;
+extern struct timespec start, end_time;
 MCS_Lock Lock_MCS;
-
+pthread_barrier_t bar3;
 /*
 	Function Name: bucketsort_thread
 	Description: Initial recursive function to split the vector for sorting for single thread
@@ -46,6 +47,12 @@ void* bucketsort_thread(void* args)
 	{
         right += offset;
     }
+    pthread_barrier_wait(&bar3);
+	if(thread_part==0)
+	{
+		clock_gettime(CLOCK_MONOTONIC,&start);
+	}
+	pthread_barrier_wait(&bar3);
     // Inserting the value in individual bucket maps
 	for(int i=left;i<=right;i++)
 	{	//mtx.lock();
@@ -59,6 +66,11 @@ void* bucketsort_thread(void* args)
 		//ttas_unlock();
 		//tas_unlock();
 		//mtx.unlock();
+	}
+	pthread_barrier_wait(&bar3);
+	if(thread_part==0)
+	{
+		clock_gettime(CLOCK_MONOTONIC,&end_time);
 	}
 }
 /*
@@ -102,7 +114,7 @@ void bucketsort(pthread_t *threads)
 	delete argt;
 }
 
-void Intiialize_MCS_Lock()
+void BAR3_init()
 {
-	//Lock_MCS = new MCS_Lock();
+	pthread_barrier_init(&bar3, NULL, thread_num);
 }

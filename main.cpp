@@ -154,13 +154,13 @@ int main(int argc, char *args[])
 		final_quick_sorted(UnsortedArray,thread_num,1);
 	}
 	else if(algorithm == "bucket")
-	{	
+	{	BAR3_init();
 		cout<<"\n\rDoing bucketsort";
 		//Sending the threads reference to BucketSort function.
 		bucketsort(threads);
 	}
 	else
-	{
+	{	
 		//Since there was not algorithm provided, will do the mergesort
 		// by default
 		cout<<"Wrong Choice,Doing Merge Sort By Default without threads";

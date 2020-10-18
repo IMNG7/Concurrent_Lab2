@@ -23,5 +23,6 @@ void* bucketsort_thread(void* args);
 	Description: Sorting function to initialize and start the bucket sort with threading
 */
 void bucketsort(pthread_t *threads);
+void BAR3_init();
 
 #endif
