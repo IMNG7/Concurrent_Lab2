@@ -7,7 +7,7 @@ using namespace std;
 #include <iostream>
 
 
-class Node
+class alignas(16) Node
 {
 public:
 	atomic<Node*> next;
@@ -17,7 +17,7 @@ public:
 		next = NULL;
 		wait = false;
 	}
-} __attribute__((packed));
+};
 class MCS_Lock
 {
 	atomic<Node*> tail;
