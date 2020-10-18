@@ -23,6 +23,7 @@ map<int,int> bucket;
 extern struct timespec start, end_time;
 MCS_Lock Lock_MCS;
 pthread_barrier_t bar3;
+barrier_sense bar;
 /*
 	Function Name: bucketsort_thread
 	Description: Initial recursive function to split the vector for sorting for single thread
@@ -47,12 +48,14 @@ void* bucketsort_thread(void* args)
 	{
         right += offset;
     }
-    pthread_barrier_wait(&bar3);
+    // cout<<"wait1";
+    bar.wait();
 	if(thread_part==0)
 	{
 		clock_gettime(CLOCK_MONOTONIC,&start);
 	}
-	pthread_barrier_wait(&bar3);
+	// cout<<"wait2";
+	bar.wait();
     // Inserting the value in individual bucket maps
 	for(int i=left;i<=right;i++)
 	{	//mtx.lock();
@@ -67,7 +70,8 @@ void* bucketsort_thread(void* args)
 		//tas_unlock();
 		//mtx.unlock();
 	}
-	pthread_barrier_wait(&bar3);
+	// cout<<"wait3";
+	bar.wait();
 	if(thread_part==0)
 	{
 		clock_gettime(CLOCK_MONOTONIC,&end_time);
@@ -84,6 +88,7 @@ void bucketsort(pthread_t *threads)
 	ssize_t* argt = new ssize_t[thread_num+1];
 	int ret;
 	int size = UnsortedArray.size();
+	bar.initialize_bar_values(thread_num);
 	for(int i=0;i<thread_num;i++)
 	{	
 		argt[i]=i;
