@@ -73,7 +73,7 @@ public:
 			sense.store(my_sense);
 		}
 		else
-		{	cout<<"\n\rMy sense:"<<my_sense<<"\n\rsense:"<<sense<<"\n\r";
+		{
 			while(sense.load()!=my_sense);
 		}
 	}

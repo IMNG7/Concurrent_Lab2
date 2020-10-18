@@ -3,15 +3,19 @@
 #Description: Makefile for the Lab0 for ECEN 5033
 #Author: Nitik Gupta
 
-DEPS = main.o util.o quicksort.o mergesort.o bucketsort.o locks.o
+DEPS1 = main.o util.o quicksort.o mergesort.o bucketsort.o locks.o
+DEPS2 = counter.o locks.o util.o
 CC = g++
 LIBS = -pthread
 CFLAGS = -g -O3
 
-all: mysort
+all: mysort counter
 
-mysort: ${DEPS}
-	${CC} ${CFLAGS} ${LIBS} ${DEPS} -o $@ 
+mysort: ${DEPS1}
+	${CC} ${CFLAGS} ${LIBS} ${DEPS1} -o $@ 
+
+counter: ${DEPS2}
+	${CC} ${CFLAGS} ${LIBS} ${DEPS2} -o $@
 
 *.o: *.cpp *.h
 	${CC} -c *.cpp
