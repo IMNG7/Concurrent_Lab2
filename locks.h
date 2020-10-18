@@ -17,7 +17,7 @@ public:
 		next = NULL;
 		wait = false;
 	}
-};
+} __attribute__((packed));
 class MCS_Lock
 {
 	atomic<Node*> tail;
@@ -48,15 +48,6 @@ public:
 			}while(succ=nullptr);
 		}
 		succ->wait.store(false,memory_order_release);
-		// if(tail.compare_exchange_strong(myNode,NULL,memory_order_seq_cst))
-		// {
-
-		// }
-		// else
-		// {
-		// 	while(myNode->next.load(memory_order_seq_cst)){}
-		// 	myNode->next->wait.store(false);
-		// }
 	}
 };
 class barrier_sense
