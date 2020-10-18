@@ -20,6 +20,8 @@ extern int thread_num;
 extern int offset;
 mutex mtx;
 map<int,int> bucket;
+MCS_Lock Lock_MCS;
+
 /*
 	Function Name: bucketsort_thread
 	Description: Initial recursive function to split the vector for sorting for single thread
@@ -31,6 +33,7 @@ void* bucketsort_thread(void* args)
 
 	// Taking the thread number
 	size_t thread_part = *((size_t*)args);
+	
 	int size = UnsortedArray.size();
 	// Calculating the value of left to send for sorting
 	int left =thread_part * (size/thread_num);
@@ -38,6 +41,7 @@ void* bucketsort_thread(void* args)
 	int right=((thread_part+1) * (size/thread_num)) -1;
 	// In the last thread, checking if there are number left and adding
 	// to right
+	Node New_node;
 	if (thread_part == thread_num - 1) 
 	{
         right += offset;
@@ -47,9 +51,11 @@ void* bucketsort_thread(void* args)
 	{	//mtx.lock();
 		//tas_lock();
 		//ttas_lock();
-		ticket_lock();
+		//ticket_lock();
+		Lock_MCS.lock(&New_node);
 		bucket.insert(pair<int,int>(UnsortedArray[i],i));
-		ticket_unlock();
+		Lock_MCS.unlock(&New_node);
+		//ticket_unlock();
 		//ttas_unlock();
 		//tas_unlock();
 		//mtx.unlock();
@@ -94,4 +100,9 @@ void bucketsort(pthread_t *threads)
 		UnsortedArray[index++] = i->first; 
 	}
 	delete argt;
+}
+
+void Intiialize_MCS_Lock()
+{
+	//Lock_MCS = new MCS_Lock();
 }
