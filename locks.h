@@ -24,30 +24,30 @@ class MCS_Lock
 public:
 	void lock(Node* myNode)
 	{
-		myNode->next.store(nullptr);
+		myNode->next.store(nullptr,memory_order_release);
 		myNode->wait.store(true);
-		Node* oldTail = tail.exchange(myNode,memory_order_acq_rel);
+		Node* oldTail = tail.exchange(myNode,memory_order_seq_cst);
 		if(oldTail)
 		{	//myNode->wait.store(true,memory_order_relaxed);
-			oldTail->next.store(myNode,memory_order_release);
-			while(myNode->wait.load(memory_order_acquire));
+			oldTail->next.store(myNode,memory_order_seq_cst);
+			while(myNode->wait.load(memory_order_seq_cst));
 		}
 	}
 	void unlock(Node* myNode)
 	{
 		Node* succ = new Node();
-		succ = myNode->next.load(memory_order_acquire);
+		succ = myNode->next.load(memory_order_release);
 		if(!succ)
 		{
 			auto expected = myNode;
-			if(tail.compare_exchange_strong(expected,nullptr,memory_order_acq_rel))
+			if(tail.compare_exchange_strong(expected,nullptr,memory_order_seq_cst))
 				return;
 			do
 			{
-				succ = myNode->next.load(memory_order_acquire);
-			}while(succ=nullptr);
+				succ = myNode->next.load(memory_order_seq_cst);
+			}while(succ==nullptr);
 		}
-		succ->wait.store(false,memory_order_release);
+		succ->wait.store(false,memory_order_seq_cst);
 	}
 };
 class barrier_sense

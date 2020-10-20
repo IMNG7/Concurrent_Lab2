@@ -20,7 +20,6 @@
 #include <pthread.h>
 #include "util.h"
 #include "mergesort.h"
-#include "quicksort.h"
 #include "bucketsort.h"
 #include "locks.h"
 #include <stdlib.h>

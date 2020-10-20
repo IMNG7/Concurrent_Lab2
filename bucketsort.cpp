@@ -10,7 +10,6 @@
 #include <mutex>
 #include <pthread.h>
 #include "bucketsort.h"
-#include "quicksort.h"
 #include "locks.h"
 #include <bits/stdc++.h>
 
