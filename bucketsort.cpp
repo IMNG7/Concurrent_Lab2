@@ -105,7 +105,7 @@ void bucketsort(pthread_t *threads)
 	if(bar_name == "sense")
 		bar_sen.initialize_bar_values(thread_num);
 	else if(bar_name == "pthread")
-		pthread_barrier_init(&bar, NULL, thread_num);
+		BAR3_init();
 	for(int i=0;i<thread_num;i++)
 	{	
 		argt[i]=i;

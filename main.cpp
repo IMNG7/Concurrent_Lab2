@@ -119,8 +119,12 @@ int main(int argc, char *args[])
 	int ret;
 	offset = UnsortedArray.size() % thread_num;
 	//pthread_barrier_init(&bar, NULL, thread_num);
-	if(algorithm == "merge")
-	{	BAR1_init();
+	if(algorithm == "fj")
+	{	
+		if(bar_name == "sense")
+			BAR_SENS_init();
+		else if(bar_name == "pthread")
+			BAR1_init();
 		//Sending the Unsorted Array to mergesort function.
 		cout<<"\n\rDoing mergesort";
 		for(int i=0;i<thread_num;i++)
@@ -148,38 +152,8 @@ int main(int argc, char *args[])
 		}
 		final_merge_sorted(UnsortedArray,thread_num,1);
 	}
-	else if(algorithm == "quick")
-	{
-		BAR2_init();
-		//Sending the Unsorted Array to mergesort function.
-		cout<<"\n\rDoing quicksort";
-		for(int i=0;i<thread_num;i++)
-		{
-			argt[i]=i;
-			//Creates threads for quick sort
-			ret = pthread_create(&threads[i],NULL,&quicksort_thread,&argt[i]);
-			if(ret)
-			{
-				cout<<"ERROR WHILE CREATION";
-				exit(-1);
-			}
-			cout<<"\n\rThreads "<<i<<" Created";
-		}
-		for(int i=0;i<thread_num;i++)
-		{
-			ret = pthread_join(threads[i],NULL);
-			if(ret)
-			{
-				printf("ERROR; pthread_join: %d\n", ret);
-				exit(-1);
-			}
-			cout<<"\n\rThreads "<<i<<" Joined";
-		}
-		//final_merge_sorted(UnsortedArray,thread_num,1);
-		final_quick_sorted(UnsortedArray,thread_num,1);
-	}
 	else if(algorithm == "bucket")
-	{	BAR3_init();
+	{	//BAR3_init();
 		cout<<"\n\rDoing bucketsort";
 		//Sending the threads reference to BucketSort function.
 		bucketsort(threads);

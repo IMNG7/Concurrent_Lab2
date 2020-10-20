@@ -7,6 +7,7 @@
 */
 #include "mergesort.h"
 #include "pthread.h"
+#include "locks.h"
 
 
 extern vector<int> UnsortedArray;
@@ -14,6 +15,8 @@ extern int thread_num;
 extern int offset;
 pthread_barrier_t bar1;
 extern struct timespec start, end_time;
+extern string bar_name;
+barrier_sense bar_sen1;
 
 /*
 	Function Name: mergesort
@@ -58,12 +61,19 @@ void* mergesort_thread(void* args)
     	}
 		// Calculates the middle value of the array given
 		int middle = left+((right-left)/2);
-		pthread_barrier_wait(&bar1);
+		if(bar_name == "sense")
+		bar_sen1.wait();
+		else if(bar_name == "pthread")
+			pthread_barrier_wait(&bar1);
 		if(thread_part==0)
 		{
 			clock_gettime(CLOCK_MONOTONIC,&start);
 		}
-		pthread_barrier_wait(&bar1);
+		// cout<<"wait2";
+		if(bar_name == "sense")
+			bar_sen1.wait();
+		else if(bar_name == "pthread")
+			pthread_barrier_wait(&bar1);
 		if(left<right)
 		{
 		//Splits the array into two parts and further given to split
@@ -75,7 +85,10 @@ void* mergesort_thread(void* args)
 		// pthread_barrier_wait(&bar);
 		merge(UnsortedArray,left,middle,right);
 		}
-		pthread_barrier_wait(&bar1);
+		if(bar_name == "sense")
+			bar_sen1.wait();
+		else if(bar_name == "pthread")
+			pthread_barrier_wait(&bar1);
 		if(thread_part==0)
 		{
 			clock_gettime(CLOCK_MONOTONIC,&end_time);
@@ -176,4 +189,8 @@ void final_merge_sorted(vector<int> &nums,int num_thread,int agg)
 void BAR1_init()
 {
 	pthread_barrier_init(&bar1, NULL, thread_num);
+}
+void BAR_SENS_init()
+{
+	bar_sen1.initialize_bar_values(thread_num);
 }

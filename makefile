@@ -3,7 +3,7 @@
 #Description: Makefile for the Lab0 for ECEN 5033
 #Author: Nitik Gupta
 
-DEPS1 = main.o util.o quicksort.o mergesort.o bucketsort.o locks.o
+DEPS1 = main.o util.o mergesort.o bucketsort.o locks.o
 DEPS2 = counter.o locks.o util.o
 CC = g++
 LIBS = -pthread

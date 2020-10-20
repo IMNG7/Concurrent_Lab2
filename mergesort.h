@@ -40,4 +40,6 @@ void final_merge_sorted(vector<int> &nums,int num_thread,int agg);
 */
 void BAR1_init();
 
+void BAR_SENS_init();
+
 #endif
