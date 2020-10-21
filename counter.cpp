@@ -1,3 +1,10 @@
+/*
+	FileName: counter.cpp
+	Description: Contains the function definitions and the main function required to perform counter micro benchmarking.
+	Author: Nitik Gupta
+	References Used: For function Pointers: 
+					https://www.cprogramming.com/tutorial/function-pointers.html
+*/
 #include <iostream>
 #include <vector>
 #include <mutex>
@@ -8,20 +15,33 @@
 #include "locks.h"
 #include "util.h"
 
-int cnt = 0;
-int num_iterations=20;
-int thread_num=4;
+int cnt = 0; // Counter for benchmark
+int num_iterations=20;	// Number of iterations the benchmarks would run
+int thread_num=4; // Number of threads
 mutex mtx;
 pthread_barrier_t bar;
-MCS_Lock Lock_MCS;
-barrier_sense bar_sen;
-lock_type lock_name;
-string bar_name;
-bool Lock_Used = false,Bar_Used = false;
+
+MCS_Lock Lock_MCS; // Object for MCS_Lock class
+
+barrier_sense bar_sen; // Object for Barrier sense class
+
+lock_type lock_name; // String for storing the lock name given
+
+string bar_name; // String for storing the barrier name given
+
+bool Lock_Used = false,Bar_Used = false; // Used to get what is given in arguments
 struct timespec start, end_time;
+// Function pointer for lock functions
 void (*lock_array[])() = {tas_lock,ttas_lock,ticket_lock,pthread_lock};
+// Function pointer for unlock functions
 void (*unlock_array[])() = {tas_unlock,ttas_unlock,ticket_unlock,pthread_unlock};
 
+/*
+	Function Name: thread_main
+	Description: Initial recursive function for the micro benchmark
+	Inputs: args - thread number
+	Returns: Nothing.
+*/
 void* thread_main(void* args)
 {	int thread_part = *((size_t*)args);
 	pthread_barrier_wait(&bar);
@@ -30,13 +50,13 @@ void* thread_main(void* args)
 		clock_gettime(CLOCK_MONOTONIC,&start);
 	}
 	pthread_barrier_wait(&bar);
+	// Object for a node to be given for MCS Lock
 	Node New_node;
-	// New_node.next = NULL;
-	// New_node.wait = false;
 	for(int i=0;i<num_iterations+thread_num;i++)
 	{
 		if(i%thread_num == thread_part)
 		{
+// If lock is defined, then look for which lock to implement
 if(Lock_Used)
 {
 			if(lock_name < mcs)
@@ -44,7 +64,7 @@ if(Lock_Used)
 			else if(lock_name == mcs)
 				Lock_MCS.lock(&New_node);
 }
-			cnt++;
+			cnt++;	//Increment the counter
 if(Lock_Used)
 {
 			if(lock_name < mcs)
@@ -54,6 +74,7 @@ if(Lock_Used)
 }
 		}
 	}
+// If barrier is defined, then look for which barrier to implement
 if(Bar_Used)
 {
 	if(bar_name == "sense")
@@ -62,6 +83,7 @@ if(Bar_Used)
 		pthread_barrier_wait(&bar);
 }
 else if(Lock_Used)
+// Barrier for the timing
 	pthread_barrier_wait(&bar);
 	if(thread_part==0)
 	{
@@ -141,14 +163,17 @@ if(Bar_Used)
 cout<<"\n\r Bar Initialized \n\r"; 
 if(Lock_Used && Bar_Used)
 {
+// If both lock and barrier are given, exit the program.
 cout<<"\n\r Cant do Lock and Bar Together \n\r Exiting";
 return 0; 
 }
 if(!Lock_Used && !Bar_Used)
 {
+// If nothing is given, use barrier by default.
 	cout<<"\n\r Not Given both Lock and Bar \n\r Using Pthread Lock by default";
 	lock_name = pthread;
 }
+//Pthread barrier is used by default for the timing, so will initialize everytime
 	pthread_barrier_init(&bar, NULL, thread_num);
 	if(bar_name == "sense")
 		bar_sen.initialize_bar_values(thread_num);
@@ -177,7 +202,9 @@ if(!Lock_Used && !Bar_Used)
 	}
 	std::vector<int> vector_cnt;
 	vector_cnt.push_back(cnt);
+	// If output file given, then write to output file
 	if(!(output_file.empty())) add_to_file(vector_cnt,output_file);
+	// If output file is not given,then write to terminal
 	else cout<<"\n\rConter Value:"<<cnt<<"\n\r";
 	unsigned long long elapsed_ns;
 	elapsed_ns = (end_time.tv_sec-start.tv_sec)*1000000000 + (end_time.tv_nsec-start.tv_nsec);
@@ -186,10 +213,22 @@ if(!Lock_Used && !Bar_Used)
 	printf("Elapsed (s): %lf\n",elapsed_s);
 	return 0;
 }
+/*
+	Function Name: pthread_lock
+	Description: Uses Pthread lock for locking primitive
+	Inputs: None
+	Returns: Nothing.
+*/
 void pthread_lock()
 {
 	mtx.lock();
 }
+/*
+	Function Name: pthread_unlock
+	Description: Uses Pthread unlock for locking primitive
+	Inputs: None
+	Returns: Nothing.
+*/
 void pthread_unlock()
 {
 	mtx.unlock();

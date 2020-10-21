@@ -20,12 +20,14 @@ extern int offset;
 mutex mtx;
 map<int,int> bucket;
 extern struct timespec start, end_time;
-MCS_Lock Lock_MCS;
-pthread_barrier_t bar;
-barrier_sense bar_sen;
-extern lock_type lock_name;
-extern string bar_name;
+MCS_Lock Lock_MCS;	// Object for MCS_Lock class
+pthread_barrier_t bar; // Object for Pthread Barrier
+barrier_sense bar_sen; // Object for Barrier sense class
+extern lock_type lock_name;	// Gets lock name for the Lock to be used
+extern string bar_name;	// Gets barrier name for the Barrier to be used
+// Function pointer for lock functions
 static void (*lock_array[])() = {tas_lock,ttas_lock,ticket_lock,pthread_lock};
+// Function pointer for unlock functions
 static void (*unlock_array[])() = {tas_unlock,ttas_unlock,ticket_unlock,pthread_unlock};
 
 /*
@@ -52,7 +54,7 @@ void* bucketsort_thread(void* args)
 	{
         right += offset;
     }
-    // cout<<"wait1";
+    // Depending on name given, use the barrier
     if(bar_name == "sense")
 		bar_sen.wait();
 	else if(bar_name == "pthread")
@@ -61,7 +63,7 @@ void* bucketsort_thread(void* args)
 	{
 		clock_gettime(CLOCK_MONOTONIC,&start);
 	}
-	// cout<<"wait2";
+	// Depending on name given, use the barrier
 	if(bar_name == "sense")
 		bar_sen.wait();
 	else if(bar_name == "pthread")
@@ -69,11 +71,14 @@ void* bucketsort_thread(void* args)
     // Inserting the value in individual bucket maps
 	for(int i=left;i<=right;i++)
 	{	
+		// Depending on name given, use the lock
 		if(lock_name < mcs)
 			(*lock_array[lock_name])();
 		else if(lock_name == mcs)
 			Lock_MCS.lock(&New_node);
+		//Insert the value inside the ordered map
 		bucket.insert(pair<int,int>(UnsortedArray[i],i));
+		// Depending on name given, use the lock
 		if(lock_name < mcs)
 			(*unlock_array[lock_name])();
 		else if(lock_name == mcs)
@@ -102,9 +107,9 @@ void bucketsort(pthread_t *threads)
 	int ret;
 	int size = UnsortedArray.size();
 	if(bar_name == "sense")
-		bar_sen.initialize_bar_values(thread_num);
+		bar_sen.initialize_bar_values(thread_num);	//Initializes the Sense Reversal barrier
 	else if(bar_name == "pthread")
-		BAR3_init();
+		BAR3_init();	//Initializes the Pthread barrier
 	for(int i=0;i<thread_num;i++)
 	{	
 		argt[i]=i;
@@ -134,15 +139,32 @@ void bucketsort(pthread_t *threads)
 	}
 	delete argt;
 }
-
+/*
+	Function Name: BAR3_init
+	Description: Initializes Barrier
+	Inputs: None
+	Returns: Nothing.
+*/
 void BAR3_init()
 {
 	pthread_barrier_init(&bar, NULL, thread_num);
 }
+/*
+	Function Name: pthread_lock
+	Description: Uses Pthread lock for locking primitive
+	Inputs: None
+	Returns: Nothing.
+*/
 void pthread_lock()
 {
 	mtx.lock();
 }
+/*
+	Function Name: pthread_unlock
+	Description: Uses Pthread unlock for locking primitive
+	Inputs: None
+	Returns: Nothing.
+*/
 void pthread_unlock()
 {
 	mtx.unlock();
