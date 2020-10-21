@@ -73,16 +73,15 @@ if(Lock_Used)
 				Lock_MCS.unlock(&New_node);
 }
 		}
+		if(Bar_Used)
+		{
+			if(bar_name == "sense")
+				bar_sen.wait();
+			else if(bar_name == "pthread")
+				pthread_barrier_wait(&bar);
+		}
 	}
-// If barrier is defined, then look for which barrier to implement
-if(Bar_Used)
-{
-	if(bar_name == "sense")
-		bar_sen.wait();
-	else if(bar_name == "pthread")
-		pthread_barrier_wait(&bar);
-}
-else if(Lock_Used)
+
 // Barrier for the timing
 	pthread_barrier_wait(&bar);
 	if(thread_part==0)

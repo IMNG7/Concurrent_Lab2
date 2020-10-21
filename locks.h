@@ -71,14 +71,14 @@ public:
 };
 class barrier_sense
 {
-	atomic<int> cnt;
+	atomic<int> count;
 	atomic<int> sense;
 	int N;
 public:
 	// Initializes the barrier values
 	void initialize_bar_values(int thread_num)
 	{
-		cnt=0; sense=0; N = thread_num-1;
+		count=0; sense=0; N = thread_num-1;
 	}
 	// Function to wait for other threads to reach this point
 	void wait()
@@ -88,10 +88,10 @@ public:
 			my_sense = 1;
 		else
 			my_sense = 0;
-		int cnt_cpy = atomic_fetch_add(&cnt,1); // Increment the copy of counter
+		int cnt_cpy = atomic_fetch_add(&count,1); // Increment the copy of counter
 		if(cnt_cpy == N)	// Check if the counter reached the last thread
 		{
-			cnt.store(0);	// reset the counter
+			count.store(0);	// reset the counter
 			sense.store(my_sense);
 		}
 		else
